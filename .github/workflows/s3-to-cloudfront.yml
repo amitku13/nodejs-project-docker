@@ -1,0 +1,48 @@
+name: Deploy Node.js app to S3 and CloudFront
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Replace with your Node.js version
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Build app (if needed)
+    - name: Build app
+      run: npm run build  # Replace with your app's build script if applicable
+
+    # Step 5: Configure AWS credentials with OIDC
+    - name: Configure AWS credentials using OIDC
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::222634381246:role/github-role  # Replace with your IAM role ARN
+        aws-region: 'ap-south-1'  # Replace with your AWS region
+
+    # Step 6: Sync build files to S3
+    - name: Sync build to S3
+      run: |
+        aws s3 sync ./build/ s3://pks3bucket876545 --delete  # Adjust the build folder and S3 bucket name
+
+    # Step 7: Invalidate CloudFront cache
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id E2U4F6BTJKUXWB \
+          --paths "/*"  # Invalidate everything
