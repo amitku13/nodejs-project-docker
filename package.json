@@ -14,6 +14,9 @@
     "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "scripts": {
+      "build": "react-scripts build"
+  },
   "author": "Aman Raj",
   "license": "MIT"
 }
